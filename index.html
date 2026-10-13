@@ -12,7 +12,7 @@
   --paper:#F2F5F7; --panel:#FFFFFF; --ink:#16263A; --muted:#5A6978;
   --grid:#E1E7EC; --line:#C3CED8; --cold:#2F6FB0; --warm:#E8A33B; --hot:#D9481F;
   --bad:#B4321A; --ok:#2E8B57; --amber:#9A6200; --teal:#3E9496;
-  --alt0:#0d366b; --alt1:#184f95; --alt2:#256abf; --alt3:#3987e5; --alt4:#6da7ec; --alt5:#86b6ef; --seq:#256abf;
+  --alt0:#0d366b; --alt1:#184f95; --alt2:#256abf; --alt3:#3987e5; --alt4:#6da7ec; --alt5:#86b6ef; --seq:#256abf; --onblue:#FFFFFF;
   --sans:"Barlow", "Segoe UI", system-ui, -apple-system, Roboto, Arial, sans-serif;
   --cond:"Barlow Semi Condensed", "Arial Narrow", "Segoe UI", system-ui, sans-serif;
 }
@@ -20,13 +20,13 @@
   :root:not([data-theme="light"]){
     --paper:#0E1620; --panel:#15202C; --ink:#E4EBF2; --muted:#93A3B3;
     --grid:#223040; --line:#344759; --cold:#5B9BE0; --bad:#FF7A5C; --ok:#5CC08A; --amber:#E8B04F; --teal:#5BB8BA;
-    --alt0:#cde2fb; --alt1:#9ec5f4; --alt2:#6da7ec; --alt3:#3987e5; --alt4:#256abf; --alt5:#184f95; --seq:#6da7ec;
+    --alt0:#cde2fb; --alt1:#9ec5f4; --alt2:#6da7ec; --alt3:#3987e5; --alt4:#256abf; --alt5:#184f95; --seq:#6da7ec; --onblue:#0E1620;
   }
 }
 :root[data-theme="dark"]{
   --paper:#0E1620; --panel:#15202C; --ink:#E4EBF2; --muted:#93A3B3;
   --grid:#223040; --line:#344759; --cold:#5B9BE0; --bad:#FF7A5C; --ok:#5CC08A; --amber:#E8B04F; --teal:#5BB8BA;
-  --alt0:#cde2fb; --alt1:#9ec5f4; --alt2:#6da7ec; --alt3:#3987e5; --alt4:#256abf; --alt5:#184f95; --seq:#6da7ec;
+  --alt0:#cde2fb; --alt1:#9ec5f4; --alt2:#6da7ec; --alt3:#3987e5; --alt4:#256abf; --alt5:#184f95; --seq:#6da7ec; --onblue:#0E1620;
 }
 :root{ box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
 html{ scroll-padding-top:env(safe-area-inset-top,0px); height:100%; }
@@ -258,6 +258,25 @@ table.glossary td:first-child{ font-weight:600; white-space:nowrap; width:1%; }
         <div class="tablewrap"><table id="perf" class="perf"></table></div>
       </section>
 
+      <section class="chart" id="stackSec">
+        <h2>Weight stack-up</h2>
+        <p id="stack-desc"></p>
+        <svg class="plot" id="stack" role="img" aria-label="Weight stack-up bars"></svg>
+        <div class="legend" id="leg-stack"></div>
+      </section>
+
+      <section class="chart" id="prSec">
+        <h2>Payload–range diagram</h2>
+        <div class="axisctl seg" role="group" aria-label="Cruise condition">
+          <span class="tlabel">Cruise at</span>
+          <button type="button" class="tbtn" data-prc="typ">Typical cruise</button>
+          <button type="button" class="tbtn" data-prc="cur">Your altitude and speed</button>
+        </div>
+        <p id="pr-desc"></p>
+        <svg class="plot" id="pr" role="img" aria-label="Payload versus range diagram"></svg>
+        <div class="legend" id="leg-pr"></div>
+      </section>
+
       <section class="chart" id="clSec">
         <h2>Lift coefficient vs angle of attack</h2>
         <p>All three configurations at the current Mach number. Each curve ends at the stall (open circle): beyond it the flow separates and the curve depends strongly on the wing, so it is not drawn. The horizontal dashed line is the lift coefficient your flight condition needs; where it meets the curve you get the angle of attack.</p>
@@ -387,6 +406,8 @@ table.glossary td:first-child{ font-weight:600; white-space:nowrap; width:1%; }
     <ul>
       <li><b>CL–α and CD–α:</b> how lift and drag grow with angle of attack for each configuration, up to the stall. Flaps shift the lift curve up (more lift at the same α) and raise the maximum lift, at the cost of more drag. Beyond the stall real wings behave very differently (a sudden lift drop on thin airliner sections, a gentle one on thick sections, little drop on a delta with vortex lift), so the curves stop there.</li>
       <li><b>Range parameter:</b> for jets, M·L/D at several Mach numbers; its peak gives the best range (Breguet). For the propeller aircraft and the sailplane, L/D (best range or best glide) and CL<sup>1.5</sup>/CD (best endurance or minimum sink).</li>
+      <li><b>Weight stack-up:</b> empty weight + payload + fuel = take-off weight, compared with the weight limits (MTOW, MZFW, MLW) for your loading and for the corners of the payload–range diagram.</li>
+      <li><b>Payload–range:</b> how far the aircraft can fly with each payload. Along A–B the payload is at its maximum and fuel is added; at B the aircraft reaches MTOW, so from B to C every extra kilogram of fuel costs a kilogram of payload; at C the tanks are full, so from C to D only removing payload adds range (less weight to carry).</li>
       <li><b>Thrust available vs Mach:</b> how engine thrust changes with speed and altitude: falling with speed for turbofans and propellers, rising for an afterburning fighter engine. Dotted lines show the thrust needed for level flight; where they meet, the aircraft reaches its top speed at that altitude.</li>
       <li><b>Flight envelope (altitude vs Mach):</b> where level flight is possible, bounded by the stall, the speed limits and the thrust, up to the ceiling. The contours show specific excess power P<sub>s</sub>: the climb rate available at each point. Hover over the chart to read values.</li>
       <li><b>Drag polars:</b> lift coefficient against drag coefficient. The line from the origin that just touches a polar marks the best lift-to-drag ratio. Polars at higher Mach numbers move right because of wave drag.</li>
@@ -486,6 +507,7 @@ table.glossary td:first-child{ font-weight:600; white-space:nowrap; width:1%; }
       <div class="eq"><span class="eqn">(8.5)</span>Breguet range:&emsp;<var>R</var> = [<var>V</var>/(<var>g</var><var>c</var>)]·(<var>L</var>/<var>D</var>)·ln[<var>W</var>/(<var>W</var> − <var>W</var><sub>fuel</sub>)],&emsp;endurance&emsp;<var>t</var> = <var>m</var><sub>fuel</sub>/<var>ṁ</var><sub>f</sub></div>
       <div class="eq"><span class="eqn">(8.6)</span>Jet range parameter:&emsp;<var>R</var> = [<var>a</var>/(<var>g</var><var>c</var>)]·<var>M</var>(<var>L</var>/<var>D</var>)·ln(<var>W</var><sub>0</sub>/<var>W</var><sub>1</sub>),&emsp;altitude for a chosen <var>C</var><sub>L</sub>:&emsp;<var>p</var> = <var>W</var>/(0.7<var>S</var><var>M</var>²<var>C</var><sub>L</sub>)</div>
       <div class="eq"><span class="eqn">(8.7)</span>Propeller range:&emsp;<var>R</var> = [η/(<var>g</var>·BSFC)]·(<var>L</var>/<var>D</var>)·ln(<var>W</var><sub>0</sub>/<var>W</var><sub>1</sub>);&emsp;sink rate ∝ √(<var>W</var>/<var>S</var>)·<var>C</var><sub>D</sub>/<var>C</var><sub>L</sub><sup>1.5</sup></div>
+      <div class="eq"><span class="eqn">(8.8)</span>Payload–range:&emsp;<var>R</var> = Σ <var>V</var>·Δ<var>m</var><sub>f</sub>/<var>ṁ</var><sub>f</sub>(<var>m</var>),&emsp;24 steps from <var>m</var><sub>TO</sub> down to <var>m</var><sub>TO</sub> − (1 − <var>r</var>)·<var>m</var><sub>fuel</sub>&emsp;(<var>r</var> = reserve fraction)</div>
       <p>Minimum-drag and minimum-power speeds and (<var>L</var>/<var>D</var>)<sub>max</sub> are found by searching over speed or <var>C</var><sub>L</sub>, so they include wave drag. Range and endurance assume the whole fuel load is flown at today's L/D and speed.</p>
     </details>
 
@@ -515,7 +537,7 @@ const AIRCRAFT = {
     name: "Airbus A320ceo", short: "A320", draw: "a320",
     S: 122.6, b: 35.8, e: 0.75, CD0: 0.0205, sweep: 25, sweepHalf: 22, tc: 0.11, kappa: 0.95, eta: 0.95, aFac: 1.15, r: 0.9, wave: "korn",
     OEW: 44300, payloadMin: 0, payloadMax: 18200, payloadStep: 100, payloadLabel: "Payload (passengers, cargo)", fuelMax: 21350, fuelLabel: "Fuel on board", fuelWord: "fuel",
-    MTOW: 78000, MZFW: 62500,
+    MTOW: 78000, MZFW: 62500, MLW: 66000, res: 0.12,
     eng: {type: "hbp", n: 2, T0: 120e3, tsfc: 0.55, label: "2 × CFM56-5B4, 120 kN each"},
     CLmaxM: [[0, 1.45], [0.3, 1.45], [0.5, 1.2], [0.7, 0.88], [0.78, 0.76], [0.82, 0.68], [0.95, 0.5]], CLneg: -0.9,
     cfgs: [
@@ -534,7 +556,7 @@ const AIRCRAFT = {
       {name: "Holding turn", cfg: 0, fuel: 30, payload: 15000, alt: 4.5, unit: "kt", v: 285, climb: ["deg", 0], turn: ["bank", 25]}
     ],
     sources: [
-      ["Airbus: A320ceo key figures (MTOW, MLW, MZFW, fuel 27 200 L, MMO 0.82, span)", "https://aircraft.airbus.com/en/aircraft/a320-family/a320ceo"],
+      ["Airbus: A320ceo key figures (MTOW 78 t, MLW 66 t, MZFW 62.5 t, fuel 27 200 L, MMO 0.82, span)", "https://aircraft.airbus.com/en/aircraft/a320-family/a320ceo"],
       ["GlobalAir: A320 specifications (operating weight, max payload, CFM56-5B4)", "https://www.globalair.com/aircraft-specifications/airbus/airbus-a320-specifications/639"]
     ],
     notes: "Wing area 122.6 m² and VMO 350 kt from Airbus aircraft characteristics. Fuel mass assumes 0.785 kg/L. CFM56-5B4 rated 27 000 lbf (120 kN)."
@@ -543,7 +565,7 @@ const AIRCRAFT = {
     name: "Boeing 747-400", short: "747", draw: "b744",
     S: 524.9, b: 64.4, e: 0.78, CD0: 0.0165, sweep: 37.5, sweepHalf: 34, tc: 0.10, kappa: 0.90, eta: 0.95, aFac: 1.3, r: 0.9, wave: "korn",
     OEW: 179014, payloadMin: 0, payloadMax: 63650, payloadStep: 500, payloadLabel: "Payload (passengers, cargo)", fuelMax: 174128, fuelLabel: "Fuel on board", fuelWord: "fuel",
-    MTOW: 396890, MZFW: 242670,
+    MTOW: 396890, MZFW: 242670, MLW: 260360, res: 0.10,
     eng: {type: "hbp", n: 4, T0: 252.4e3, tsfc: 0.58, label: "4 × PW4056, 252 kN each"},
     CLmaxM: [[0, 1.45], [0.3, 1.45], [0.5, 1.2], [0.75, 0.88], [0.85, 0.76], [0.92, 0.66], [0.95, 0.58]], CLneg: -0.9,
     cfgs: [
@@ -565,6 +587,7 @@ const AIRCRAFT = {
       ["AeroCorner, citing Boeing airport planning data (OEW 179 014 kg, fuel 216 847 L = 174 128 kg)", "https://aerocorner.com/blog/how-much-fuel-does-a-747-hold/"],
       ["KN Aviation: 747 specs (span 64.4 m, wing area 525 m²)", "https://knaviation.net/boeing-747-specs/"],
       ["EASA TCDS IM.E.050: PW4056 rated 56 750 lbf", "https://www.easa.europa.eu/hr/downloads/7713/en"],
+      ["Aircraft Commerce 747-400 guide: MLW option 574 000 lb", "https://aircraft-commerce.com/wp-content/uploads/aircraft-commerce-docs/Aircraft%20guides/747-400/ISSUE%2051-747-400%20GUIDE.pdf"],
       ["This Day in Aviation: cruise M 0.85, maximum M 0.92", "https://www.thisdayinaviation.com/tag/pratt-whitney-pw4056/"]
     ],
     notes: "MTOW 875 000 lb (396 890 kg) variant. MZFW 535 000 lb and VMO 365 kt are typical published values."
@@ -574,7 +597,7 @@ const AIRCRAFT = {
     S: 51.2, b: 10.95, e: 0.8, CD0: 0.019, sweep: 53, sweepHalf: 40, tc: 0.045, kappa: 0.95, eta: 0.95, aFac: 1.25, r: 0.9, wave: "fighter",
     wv: {Mcr: 0.86, Mpk: 1.15, pk: 0.024},
     OEW: 11000, payloadMin: 0, payloadMax: 7500, payloadStep: 100, payloadLabel: "External stores", fuelMax: 4996, fuelLabel: "Internal fuel on board", fuelWord: "fuel",
-    MTOW: 23500, MZFW: null,
+    MTOW: 23500, MZFW: null, MLW: null, res: 0.15,
     eng: {type: "lbp", n: 2, T0: 60e3, T0w: 90e3, tsfc: 0.8, tsfcW: 1.75, label: "2 × EJ200, 60 kN dry / 90 kN reheat each"},
     CLmaxM: [[0, 1.5], [0.4, 1.5], [0.8, 1.3], [1.0, 1.05], [1.3, 0.9], [2.2, 0.75]], CLneg: -0.8,
     cfgs: [
@@ -604,7 +627,7 @@ const AIRCRAFT = {
     name: "Sailplane (Schleicher ASW 28)", short: "ASW 28", draw: "asw",
     S: 10.5, b: 15.0, e: 0.98, CD0: 0.0081, sweep: 0, sweepHalf: 0, tc: 0.147, kappa: 0.87, eta: 0.95, aFac: 1.0, r: 0.9, wave: "korn",
     OEW: 240, payloadMin: 55, payloadMax: 115, payloadStep: 1, payloadLabel: "Pilot and parachute", fuelMax: 200, fuelLabel: "Water ballast", fuelWord: "water ballast",
-    MTOW: 525, MZFW: null,
+    MTOW: 525, MZFW: null, MLW: null, res: 0,
     eng: null,
     CLmaxM: [[0, 1.4], [0.3, 1.4]], CLneg: -0.9,
     cfgs: [
@@ -634,8 +657,8 @@ const AIRCRAFT = {
     name: "Cessna 172S Skyhawk (trainer)", short: "C172", draw: "c172",
     S: 16.2, b: 11.0, e: 0.72, CD0: 0.031, sweep: 0, sweepHalf: 0, tc: 0.12, kappa: 0.87, eta: 0.95, aFac: 1.1, r: 0.85, wave: "korn",
     OEW: 754, payloadMin: 60, payloadMax: 400, payloadStep: 5, payloadLabel: "Occupants and baggage", fuelMax: 144, fuelLabel: "Fuel on board", fuelWord: "fuel",
-    MTOW: 1157, MZFW: null,
-    eng: {type: "prop", n: 1, P0: 134e3, Ts: 2100, etaP: 0.78, bsfc: 0.27, label: "Lycoming IO-360-L2A, 134 kW (180 hp), fixed-pitch propeller"},
+    MTOW: 1157, MZFW: null, MLW: 1157, res: 0.15,
+    eng: {type: "prop", n: 1, P0: 134e3, Ts: 2100, etaP: 0.8, bsfc: 0.27, label: "Lycoming IO-360-L2A, 134 kW (180 hp), fixed-pitch propeller"},
     CLmaxM: [[0, 1.54], [0.3, 1.54]], CLneg: -0.8,
     cfgs: [
       {name: "Clean", long: "Clean: flaps up", CLmax: 1.54, as: 17, dCD0: 0, nmax: 3.8, nmin: -1.52, Vfe: null},
@@ -657,7 +680,7 @@ const AIRCRAFT = {
       ["Cessna 172S Information Manual (wing area 174 ft², empty 1 663 lb, max 2 550 lb, 53 US gal usable, IO-360-L2A 180 hp, VNE 160 KCAS, VFE, stall 53/48 KCAS, +3.8/−1.52 g, max climb 730 ft/min)", "https://www.befa.org/wp-content/uploads/2019/12/POH-Cessna-172S.pdf"],
       ["AOPA aircraft guide: Cessna 172", "https://www.aopa.org/go-fly/aircraft-and-ownership/aircraft-guide/aircraft/cessna-172"]
     ],
-    notes: "Fuel mass assumes avgas at 0.72 kg/L. CLmax is set from the POH stall speeds at 2 550 lb. The POH glide (about 9 : 1 at 68 KIAS) includes the drag of the windmilling propeller, which the model leaves out, so the model glides further (about 11 : 1). Power falls with altitude by the Gagg–Ferrar rule; propeller efficiency 0.78; static thrust about 2.1 kN (estimates)."
+    notes: "Fuel mass assumes avgas at 0.72 kg/L. CLmax is set from the POH stall speeds at 2 550 lb. The POH glide (about 9 : 1 at 68 KIAS) includes the drag of the windmilling propeller, which the model leaves out, so the model glides further (about 11 : 1). Power falls with altitude by the Gagg–Ferrar rule; propeller efficiency 0.80; static thrust about 2.1 kN (estimates)."
   }
 };
 for (const ac of Object.values(AIRCRAFT)) {
@@ -837,7 +860,7 @@ const $ = id => document.getElementById(id);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const nf = (x, d = 0) => isFinite(x) ? x.toLocaleString("en-US", {minimumFractionDigits: d, maximumFractionDigits: d}) : "–";
 const SU = {ms: {lab: "m/s", f: 1}, kmh: {lab: "km/h", f: 3.6}, kt: {lab: "kt", f: KT}};
-const state = {ac: "a320", ci: 0, modes: {speed: "kt", climb: "deg", turn: "bank"}, tp: "T", rx: "a", treq: true, sep: true};
+const state = {ac: "a320", ci: 0, modes: {speed: "kt", climb: "deg", turn: "bank"}, tp: "T", rx: "a", treq: true, sep: true, prc: "typ"};
 const spdU = () => state.modes.speed === "mach" ? "kt" : state.modes.speed;
 const cv = V => V * SU[spdU()].f;
 const fmtV = (V, d = 0) => isFinite(V) ? `${nf(cv(V), d)} ${SU[spdU()].lab}` : "–";
@@ -976,6 +999,7 @@ function updateButtons() {
   document.querySelectorAll("[data-rx]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.rx === state.rx)));
   document.querySelectorAll("[data-treq]").forEach(b => b.setAttribute("aria-pressed", String((b.dataset.treq === "1") === state.treq)));
   document.querySelectorAll("[data-sep]").forEach(b => b.setAttribute("aria-pressed", String((b.dataset.sep === "1") === state.sep)));
+  document.querySelectorAll("[data-prc]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.prc === state.prc)));
   $("strip-ac").textContent = ac.short;
 }
 function applyScenario(i) {
@@ -994,6 +1018,7 @@ document.querySelectorAll("[data-tp]").forEach(b => b.addEventListener("click", 
 document.querySelectorAll("[data-rx]").forEach(b => b.addEventListener("click", () => { state.rx = b.dataset.rx; updateButtons(); schedule(); }));
 document.querySelectorAll("[data-treq]").forEach(b => b.addEventListener("click", () => { state.treq = b.dataset.treq === "1"; updateButtons(); schedule(); }));
 document.querySelectorAll("[data-sep]").forEach(b => b.addEventListener("click", () => { state.sep = b.dataset.sep === "1"; updateButtons(); schedule(); }));
+document.querySelectorAll("[data-prc]").forEach(b => b.addEventListener("click", () => { state.prc = b.dataset.prc; updateButtons(); schedule(); }));
 
 /* ---------- generic plot ---------- */
 function niceTicks(min, max, n) {
@@ -1013,7 +1038,20 @@ function svgW(svg) { return Math.max(300, Math.min(2400, svg.parentElement.clien
 function drawPlot(svg, c) {
   const W = svgW(svg);
   const H = Math.round(Math.max(260, Math.min(c.maxH || 520, W * (c.aspect || 0.58), window.innerHeight * 0.5)));
-  const m = {l: 60, r: c.y2 ? 62 : 16, t: c.x2 ? 46 : 12, b: 46}, pw = W - m.l - m.r, ph = H - m.t - m.b;
+  const m = {l: 60, r: c.y2 ? 62 : 24, t: c.x2 ? 46 : 12, b: 46};
+  let catLines = null;
+  if (c.xcats) {
+    const catW = (W - m.l - m.r) / (c.xmax - c.xmin) * 0.96, maxCh = Math.max(4, Math.floor(catW / 6.6));
+    const cats = c.xcatsShort && c.xcats.some(t => t.split(" ").some(w => w.length * 6.2 > catW)) ? c.xcatsShort : c.xcats;
+    catLines = cats.map(t => {
+      const words = t.split(" "), out = [];
+      for (const w of words) { const last = out[out.length - 1]; if (last !== undefined && (last + " " + w).length <= maxCh) out[out.length - 1] = last + " " + w; else out.push(w); }
+      return out;
+    });
+    const nl = Math.max(...catLines.map(l => l.length));
+    m.b = 16 + nl * 14 + (c.xlabel ? 18 : 0);
+  }
+  const pw = W - m.l - m.r, ph = H - m.t - m.b;
   const Xp = x => m.l + (x - c.xmin) / (c.xmax - c.xmin) * pw;
   const X2 = c.x2 ? (x => m.l + (x - c.x2.min) / (c.x2.max - c.x2.min) * pw) : Xp;
   const Yp = y => m.t + ph - (y - c.ymin) / (c.ymax - c.ymin) * ph;
@@ -1022,7 +1060,8 @@ function drawPlot(svg, c) {
   const id = "clip" + (++clipN);
   let s = `<defs><clipPath id="${id}"><rect x="${m.l}" y="${m.t}" width="${pw}" height="${ph}"/></clipPath></defs>`;
   const nx = Math.max(3, Math.round(pw / 80)), ny = Math.max(3, Math.round(ph / 55));
-  for (const v of niceTicks(c.xmin, c.xmax, nx)) s += `<line class="grid" x1="${Xp(v)}" x2="${Xp(v)}" y1="${m.t}" y2="${m.t + ph}"/><text x="${Xp(v)}" y="${m.t + ph + 17}" text-anchor="middle">${fmt(v)}</text>`;
+  if (c.xcats) catLines.forEach((ls, i) => { s += `<text x="${Xp(i + 0.5)}" y="${m.t + ph + 17}" text-anchor="middle" style="fill:var(--ink);font-size:12px">${ls.map((l, k) => `<tspan x="${Xp(i + 0.5)}" dy="${k ? 14 : 0}">${l}</tspan>`).join("")}</text>`; });
+  else for (const v of niceTicks(c.xmin, c.xmax, nx)) s += `<line class="grid" x1="${Xp(v)}" x2="${Xp(v)}" y1="${m.t}" y2="${m.t + ph}"/><text x="${Xp(v)}" y="${m.t + ph + 17}" text-anchor="middle">${fmt(v)}</text>`;
   for (const v of niceTicks(c.ymin, c.ymax, ny)) s += `<line class="grid" x1="${m.l}" x2="${m.l + pw}" y1="${Yp(v)}" y2="${Yp(v)}"/><text x="${m.l - 7}" y="${Yp(v) + 4}" text-anchor="end">${fmt(v)}</text>`;
   if (c.x2) for (const v of niceTicks(c.x2.min, c.x2.max, nx)) s += `<text x="${X2(v)}" y="${m.t - 7}" text-anchor="middle">${fmt(v)}</text>`;
   if (c.y2) for (const v of niceTicks(c.y2.min, c.y2.max, ny)) s += `<text x="${m.l + pw + 7}" y="${Y2(v) + 4}" text-anchor="start">${fmt(v)}</text>`;
@@ -1054,7 +1093,7 @@ function drawPlot(svg, c) {
     s += `<circle cx="${X(p.x)}" cy="${Y(p.y)}" r="${p.r || 4}" style="fill:${fill};stroke:${p.color || "var(--ink)"};stroke-width:1.6"/>`;
     if (p.label) s += `<text class="lbl" x="${X(p.x) + (p.dx || 8)}" y="${Y(p.y) + (p.dy || 4)}" text-anchor="${(p.dx || 8) < 0 ? "end" : "start"}">${p.label}</text>`;
   }
-  for (const t of c.texts || []) if (isFinite(t.x) && isFinite(t.y)) s += `<text x="${(t.x2 ? X2 : Xp)(t.x) + (t.dx || 0)}" y="${Yp(t.y) + (t.dy || 0)}" text-anchor="${t.anchor || "start"}" style="font-size:11px;${t.color ? `fill:${t.color};` : ""}">${t.t}</text>`;
+  for (const t of c.texts || []) if (isFinite(t.x) && isFinite(t.y)) s += `<text x="${(t.x2 ? X2 : Xp)(t.x) + (t.dx || 0)}" y="${Yp(t.y) + (t.dy || 0)}" text-anchor="${t.anchor || "start"}" style="font-size:11px;paint-order:stroke;stroke:var(--panel);stroke-width:3px;stroke-linejoin:round;${t.color ? `fill:${t.color};` : ""}">${t.t}</text>`;
   s += `</g>`;
   s += `<text class="axis" x="${m.l + pw / 2}" y="${H - 8}" text-anchor="middle">${c.xlabel}</text>`;
   s += `<text class="axis" transform="translate(15,${m.t + ph / 2}) rotate(-90)" text-anchor="middle">${c.ylabel}</text>`;
@@ -1640,6 +1679,162 @@ function sepSvg(g, X, Y) {
   return s + `</g>`;
 }
 
+/* ---------- payload–range and weight stack-up ---------- */
+function cruiseCond(P) {
+  const ac = AIRCRAFT[P.ac];
+  if (state.prc === "cur" || !ac.eng) return {alt: P.alt, V: P.V, lab: "your altitude and speed"};
+  const sc = ac.scen[0], atm = isa(sc.alt, P.dT);
+  const V = sc.unit === "mach" ? sc.v * atm.a : sc.unit === "kt" ? sc.v / KT : sc.unit === "kmh" ? sc.v / 3.6 : sc.v;
+  return {alt: sc.alt, V, lab: `${nf(sc.alt, 1)} km and ${sc.unit === "mach" ? `Mach ${sc.v}` : `${sc.v} ${SU[sc.unit].lab}`} (the “${sc.name}” scenario)`};
+}
+function cruiseRange(ac, base, m0, burn) {
+  const n = 24, dm = burn / n;
+  let R = 0, thrustLim = false, stalled = false;
+  for (let k = 0; k < n; k++) {
+    const m = m0 - (k + 0.5) * dm, F = flight({...base, fuel: 0, payload: m - ac.OEW});
+    if (!F.ok) { stalled = true; return {R: NaN, thrustLim, stalled}; }
+    if (F.Treq > F.Tav.max) thrustLim = true;
+    R += F.V * dm / fuelFlow(ac, F.Treq, F.Tav, F.M, F.V).ff;
+  }
+  return {R, thrustLim, stalled};
+}
+function payloadRange(P) {
+  const ac = AIRCRAFT[P.ac];
+  if (!ac.eng) return null;
+  const cc = cruiseCond(P);
+  const base = {ac: P.ac, ci: 0, alt: cc.alt, dT: P.dT, V: cc.V, climb: {mode: "deg", v: 0}, turn: {mode: "bank", v: 0}};
+  const PLmax = Math.min(ac.payloadMax, ac.MZFW ? ac.MZFW - ac.OEW : Infinity);
+  const fB = Math.max(0, Math.min(ac.fuelMax, ac.MTOW - ac.OEW - PLmax)), PLc = Math.max(0, Math.min(PLmax, ac.MTOW - ac.OEW - ac.fuelMax));
+  const pt = (PL, fuel) => { const r = cruiseRange(ac, base, ac.OEW + PL + fuel, fuel * (1 - ac.res)); return {PL, fuel, TOW: ac.OEW + PL + fuel, ...r}; };
+  const curve = [], N = 30;
+  for (let i = 0; i <= N; i++) curve.push(pt(PLmax, fB * i / N));
+  if (ac.fuelMax > fB + 1e-6) for (let i = 1; i <= N; i++) { const f = fB + (ac.fuelMax - fB) * i / N; curve.push(pt(Math.max(0, Math.min(PLmax, ac.MTOW - ac.OEW - f)), f)); }
+  for (let i = 1; i <= N; i++) { const PL = PLc * (1 - i / N); curve.push(pt(PL, ac.fuelMax)); }
+  const B = pt(PLmax, fB), C = pt(PLc, ac.fuelMax), D = pt(0, ac.fuelMax);
+  const fuelCur = P.fuel * ac.fuelMax, cur = pt(P.payload, fuelCur);
+  // limit lines extended beyond the corners: constant TOW = MTOW, and constant fuel = tank capacity
+  const mtowLine = [], fuelLine = [], plTop = PLmax * 1.2, NL = 16;
+  const f0 = Math.max(0, ac.MTOW - ac.OEW - plTop), f1 = Math.min(ac.MTOW - ac.OEW - 0.15 * PLmax, ac.fuelMax * 1.25);
+  for (let i = 0; i <= NL; i++) { const f = f0 + (f1 - f0) * i / NL; mtowLine.push(pt(ac.MTOW - ac.OEW - f, f)); }
+  for (let i = 0; i <= NL; i++) fuelLine.push(pt(plTop * i / NL, ac.fuelMax));
+  return {ac, cc, base, PLmax, B, C, D, curve, cur, mtowLine, fuelLine, thrustLim: curve.some(c => c.thrustLim), stalled: curve.some(c => c.stalled)};
+}
+function drawPR(P, F, PR) {
+  const ac = AIRCRAFT[P.ac], svg = $("pr");
+  if (!PR) {
+    drawPlot(svg, {xmin: 0, xmax: 1, ymin: 0, ymax: 1, xlabel: "Range [km]", ylabel: "Payload", lines: [], note: "No fuel, no payload–range: a sailplane's range is its glide."});
+    const h = P.alt * 1000, F0 = flight({...P, climb: {mode: "deg", v: 0}, turn: {mode: "bank", v: 0}});
+    $("pr-desc").textContent = `A sailplane carries no fuel, so it has no payload–range diagram. In still air its range is set by height and glide ratio: from ${nf(P.alt, 1)} km it can glide about ${F0.ok ? nf(h * F0.LD / 1000, 0) : "–"} km at the current speed (L/D ${F0.ok ? nf(F0.LD, 1) : "–"}). Cross-country flights of 1 000 km and more are possible because thermals and ridge lift keep restoring the height.`;
+    $("leg-pr").innerHTML = ""; svg._hover = null; return;
+  }
+  const big = ac.MTOW > 20000, mu = big ? 1000 : 1, mun = big ? "t" : "kg", dec = big ? 1 : 0;
+  const pts = PR.curve.filter(c => isFinite(c.R)).map(c => [c.R / 1000, c.PL / mu]);
+  const Rmax = Math.max(...pts.map(p => p[0]), isFinite(PR.cur.R) ? PR.cur.R / 1000 : 0);
+  const ymax = niceCeil(Math.max(PR.PLmax, P.payload) / mu * 1.25);
+  const fill = pts.length ? [{pts: [[0, 0], ...pts, [pts[pts.length - 1][0], 0]], color: "var(--cold)", opacity: 0.1}] : [];
+  const ml = PR.mtowLine.filter(c => isFinite(c.R)).map(c => [c.R / 1000, c.PL / mu]), fl = PR.fuelLine.filter(c => isFinite(c.R)).map(c => [c.R / 1000, c.PL / mu]);
+  const texts = [];
+  if (ml.length) {
+    const s0 = ml[0], e = ml[ml.length - 1], t = `MTOW ${nf(ac.MTOW / mu, dec)} ${mun}`;
+    if (s0[0] > 0.18 * Rmax) texts.push({x: s0[0], y: s0[1], t, anchor: "end", dx: -6, dy: 4, color: "var(--bad)"});
+    else texts.push({x: e[0], y: e[1], t, anchor: "end", dx: -4, dy: 15, color: "var(--bad)"});
+  }
+  if (fl.length) { const e = fl[fl.length - 1]; texts.push({x: e[0], y: e[1], t: `max fuel volume ${nf(ac.fuelMax / mu, dec)} ${mun}`, anchor: "start", dx: 6, dy: 4, color: "var(--amber)"}); }
+  const lab = (c, t, dx, dy) => isFinite(c.R) ? {x: c.R / 1000, y: c.PL / mu, r: 4.5, hollow: true, color: "var(--ink)", label: t, dx, dy} : null;
+  const abSame = PR.B.R / 1000 < 0.03 * Rmax;
+  const markers = [abSame ? null : lab({R: 0, PL: PR.PLmax}, "A", 8, -8), lab(PR.B, abSame ? "A = B" : "B", 6, -8), PR.C.fuel > PR.B.fuel + 1 ? lab(PR.C, "C", 6, -8) : null, lab(PR.D, "D", -6, -8)].filter(Boolean);
+  markers.find(m => m.label === "D").dx = -16;
+  const over = PR.cur.TOW > ac.MTOW + 0.5;
+  if (isFinite(PR.cur.R)) markers.push({x: PR.cur.R / 1000, y: P.payload / mu, r: 6, color: over ? "var(--bad)" : "var(--ink)", label: over ? "your loading (above MTOW)" : "your loading", dx: 9, dy: 16});
+  drawPlot(svg, {xmin: 0, xmax: niceCeil(Rmax * 1.08), ymin: 0, ymax, xlabel: "Range [km]", ylabel: `Payload [${mun}]`, fills: fill,
+    lines: [{pts: ml, color: "var(--bad)", width: 1.4, dash: "6 4"}, {pts: fl, color: "var(--warm)", width: 1.6, dash: "6 4"}, {pts, color: "var(--ink)", width: 2.6}], markers, texts,
+    hlines: [{y: PR.PLmax / mu, color: "var(--muted)", width: 1, dash: "3 4", label: ac.MZFW && ac.MZFW - ac.OEW < ac.payloadMax ? "max payload (MZFW limit)" : "max payload"}],
+    note: !pts.length ? "Cruise condition not possible (stall at this weight)" : ""});
+  const nm = km => nf(km / 1.852, 0);
+  $("leg-pr").innerHTML = legend([{t: "Payload–range boundary", color: "var(--ink)"}, {t: "Max payload", color: "var(--muted)", dash: true}, {t: "MTOW (take-off weight = MTOW)", color: "var(--bad)", dash: true}, {t: "Max fuel volume (full tanks)", color: "var(--warm)", dash: true}, {dot: true, color: "var(--ink)", t: "Your payload and fuel"}]) +
+    `<span>A–B: max payload, fuel added up to MTOW · B–C: trading payload for fuel at MTOW · C–D: full tanks, less payload (D = ferry range)</span>` +
+    `<span>B ${nf(PR.B.R / 1000, 0)} km (${nm(PR.B.R / 1000)} nm) · ${PR.C.fuel > PR.B.fuel + 1 ? `C ${nf(PR.C.R / 1000, 0)} km · ` : ""}D ${nf(PR.D.R / 1000, 0)} km (${nm(PR.D.R / 1000)} nm) · yours ${nf(PR.cur.R / 1000, 0)} km</span>`;
+  $("pr-desc").innerHTML = `The longest distance the aircraft can fly with each payload, cruising at ${PR.cc.lab} in clean configuration. The range is found by stepping through the cruise as fuel burns off (the weight, CL, drag and fuel flow all change), using the same model as the rest of the page. ${nf(ac.res * 100, 0)} % of the fuel is kept back for taxi, climb, descent and reserves. ${ac.MZFW ? "The payload is capped by the maximum zero-fuel weight, " : "The payload is capped by the payload limit, "}the take-off weight by MTOW, and the fuel by the tank capacity.` +
+    (PR.thrustLim ? ` <span style="color:var(--amber)">At the heaviest weights the engines cannot hold this speed and altitude; a real flight would cruise lower first.</span>` : "") +
+    (ac.sup ? " Store drag is not modelled, so heavy external loads look better than they would in reality." : "");
+  svg._hover = R => {
+    if (R < 0) return "";
+    const c = PR.curve.filter(c => isFinite(c.R));
+    let best = null; for (const p of c) if (p.R / 1000 >= R && (!best || p.PL > best.PL)) best = p;
+    if (!best) return `<b>${nf(R, 0)} km</b> (${nm(R)} nm)<br>Beyond ferry range`;
+    return `<b>${nf(R, 0)} km</b> (${nm(R)} nm)<br>Max payload ${nf(best.PL / mu, dec + 1)} ${mun}<br>Fuel ${nf(best.fuel / mu, dec + 1)} ${mun} · TOW ${nf(best.TOW / mu, dec + 1)} ${mun}`;
+  };
+}
+function drawStack(P, F, PR) {
+  const ac = AIRCRAFT[P.ac], svg = $("stack"), big = ac.MTOW > 20000, mu = big ? 1000 : 1, mun = big ? "t" : "kg", dec = big ? 1 : 0;
+  const fw = ac.fuelWord, Fw = fw[0].toUpperCase() + fw.slice(1);
+  const bars = [{t: "Your loading", st: "Yours", PL: P.payload, fuel: P.fuel * ac.fuelMax}];
+  if (PR) {
+    bars.push({t: "B: max payload", st: "B", PL: PR.B.PL, fuel: PR.B.fuel});
+    if (PR.C.fuel > PR.B.fuel + 1) bars.push({t: "C: full tanks", st: "C", PL: PR.C.PL, fuel: PR.C.fuel});
+    bars.push({t: "D: ferry", st: "D", PL: 0, fuel: ac.fuelMax});
+  } else {
+    bars.push({t: `Full ${fw}`, st: "Full", PL: P.payload, fuel: ac.fuelMax}, {t: `No ${fw}`, st: "None", PL: P.payload, fuel: 0});
+  }
+  const segDefs = [
+    {k: "OEW", t: "Operating empty weight", c: "color-mix(in srgb, var(--muted) 55%, var(--panel))", tc: "var(--ink)"},
+    {k: "PL", t: ac.payloadLabel, c: "var(--cold)", tc: "var(--onblue)"},
+    ...(ac.res > 0 ? [{k: "res", t: `Reserve ${fw} (${nf(ac.res * 100, 0)} %)`, c: "color-mix(in srgb, var(--warm) 50%, var(--panel))", tc: "var(--ink)"}, {k: "trip", t: `Trip ${fw}`, c: "var(--warm)", tc: "#16263A"}]
+      : [{k: "trip", t: Fw, c: "var(--warm)", tc: "#16263A"}])
+  ];
+  for (const b of bars) {
+    b.res = b.fuel * ac.res; b.trip = b.fuel - b.res; b.OEW = ac.OEW;
+    b.ZFW = ac.OEW + b.PL; b.TOW = b.ZFW + b.fuel; b.LW = b.TOW - b.trip;
+  }
+  const ymax = niceCeil(Math.max(ac.MTOW, ...bars.map(b => b.TOW)) / mu * 1.12);
+  const limits = [{v: ac.MTOW, t: "MTOW", c: "var(--bad)", d: ""}];
+  if (ac.MZFW) limits.push({v: ac.MZFW, t: "MZFW", c: "var(--ink)", d: "6 4"});
+  if (ac.MLW && ac.MLW < ac.MTOW) limits.push({v: ac.MLW, t: "MLW", c: "var(--ink)", d: "2 3"});
+  const n = bars.length;
+  const raw = (X, Y) => {
+    let s = "";
+    const sp = X(1) - X(0), bw = Math.min(110, sp * 0.55), tight = sp < 70;
+    bars.forEach((b, i) => {
+      const cx = X(i + 0.5); let y0 = 0;
+      for (const sd of segDefs) {
+        const v = b[sd.k]; if (!(v > 0)) continue;
+        const ya = Y((y0 + v) / mu), yb = Y(y0 / mu), h = yb - ya - 2;
+        if (h > 0.5) {
+          s += `<rect x="${(cx - bw / 2).toFixed(1)}" y="${(ya + 1).toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="3" style="fill:${sd.c}"/>`;
+          if (h > 17 && bw > 26) s += `<text x="${cx.toFixed(1)}" y="${(ya + 1 + h / 2 + 4).toFixed(1)}" text-anchor="middle" style="font-size:11px;fill:${sd.tc}">${nf(v / mu, dec)}</text>`;
+        }
+        y0 += v;
+      }
+      const over = b.TOW > ac.MTOW + 0.5;
+      s += `<text x="${cx.toFixed(1)}" y="${(Y(b.TOW / mu) - 6).toFixed(1)}" text-anchor="middle" style="font:600 ${tight ? 10.5 : 12}px var(--cond);fill:${over ? "var(--bad)" : "var(--ink)"}">${nf(b.TOW / mu, tight ? 0 : dec)}${tight ? "" : ` ${mun}`}</text>`;
+      if (ac.res > 0 && b.fuel > 0) s += `<line x1="${(cx - bw / 2 - 5).toFixed(1)}" x2="${(cx + bw / 2 + 5).toFixed(1)}" y1="${Y(b.LW / mu).toFixed(1)}" y2="${Y(b.LW / mu).toFixed(1)}" style="stroke:var(--ink);stroke-width:1.6"/>`;
+    });
+    const ly = limits.map(L => ({...L, y: Y(L.v / mu), ty: Y(L.v / mu) + 4})).sort((a, b) => a.y - b.y);
+    for (let k = 1; k < ly.length; k++) if (ly[k].ty - ly[k - 1].ty < 13) ly[k].ty = ly[k - 1].ty + 13;
+    for (const L of ly) {
+      s += `<line x1="${X(0)}" x2="${X(n) + 4}" y1="${L.y}" y2="${L.y}" style="stroke:${L.c};stroke-width:1.5;${L.d ? `stroke-dasharray:${L.d}` : ""}"/>`;
+      s += `<text x="${X(n) + 8}" y="${L.ty}" text-anchor="start" style="font-size:11px;fill:var(--ink)">${L.t} ${nf(L.v / mu, dec)} ${mun}</text>`;
+    }
+    return s;
+  };
+  const pw0 = svgW(svg) - 84, colX = Math.max(0.85, 92 * n / Math.max(120, pw0 - 92));
+  drawPlot(svg, {xmin: 0, xmax: n + colX, ymin: 0, ymax, xlabel: "", ylabel: `Mass [${mun}]`, xcats: bars.map(b => b.t), xcatsShort: bars.map(b => b.st), lines: [], raw, aspect: 0.62});
+  $("leg-stack").innerHTML = legend(segDefs.map(sd => ({t: sd.t, color: sd.c}))) + (ac.res > 0 ? `<span><i style="border-color:var(--ink);border-top-width:2px"></i>Landing weight (trip ${fw} burned)</span>` : "") + `<span>Hover a bar for details.</span>`;
+  $("stack-desc").innerHTML = PR
+    ? `How the take-off weight is built up: operating empty weight (structure, engines, systems, crew), plus payload, plus fuel. Your current loading is compared with the corner points of the payload–range diagram. The lines show the certified limits: MTOW${ac.MZFW ? ", the maximum zero-fuel weight (MZFW, which limits payload because fuel in the wings relieves the wing bending)" : ""}${ac.MLW && ac.MLW < ac.MTOW ? " and the maximum landing weight (MLW): after the trip fuel is burned, the landing weight (the tick across each bar) must be below it" : ""}.`
+    : `How the flying mass is built up for a sailplane: empty mass, pilot and water ballast. Ballast raises the wing loading, so the glider flies faster at the same glide ratio, which pays off in strong thermals; it is dumped before landing.`;
+  svg._hover = (x, y) => {
+    const i = Math.floor(x); if (i < 0 || i >= n) return "";
+    const b = bars[i];
+    return `<b>${b.t}</b><br>OEW ${nf(ac.OEW / mu, dec + 1)} ${mun}<br>${ac.payloadLabel} ${nf(b.PL / mu, dec + 1)} ${mun}<br>${Fw} ${nf(b.fuel / mu, dec + 1)} ${mun}${ac.res > 0 ? ` (trip ${nf(b.trip / mu, dec + 1)}, reserve ${nf(b.res / mu, dec + 1)})` : ""}<br>Zero-fuel ${nf(b.ZFW / mu, dec + 1)} ${mun} · Take-off <b>${nf(b.TOW / mu, dec + 1)} ${mun}</b>` +
+      (ac.res > 0 ? `<br>Landing ${nf(b.LW / mu, dec + 1)} ${mun}` : "") +
+      (b.TOW > ac.MTOW + 0.5 ? `<br><span style="color:var(--bad)">Above MTOW</span>` : "") +
+      (ac.MZFW && b.ZFW > ac.MZFW + 0.5 ? `<br><span style="color:var(--bad)">Above MZFW</span>` : "") +
+      (ac.MLW && ac.res > 0 && b.LW > ac.MLW + 0.5 ? `<br><span style="color:var(--amber)">Landing weight above MLW</span>` : "") +
+      (PR && i === 0 && isFinite(PR.cur.R) ? `<br>Range ${nf(PR.cur.R / 1000, 0)} km` : PR && i > 0 ? `<br>Range ${nf([PR.B, PR.C.fuel > PR.B.fuel + 1 ? PR.C : null, PR.D].filter(Boolean)[i - 1].R / 1000, 0)} km` : "");
+  };
+}
+
 /* ---------- thrust available vs Mach ---------- */
 const ALTC = ["var(--alt0)", "var(--alt1)", "var(--alt2)", "var(--alt3)", "var(--alt4)", "var(--alt5)"];
 function drawThrustM(P, F) {
@@ -1958,6 +2153,9 @@ function render() {
   if (isOpen("sideSec")) drawSide($("side"), F, P);
   if (isOpen("frontSec")) drawFront($("front"), F);
   if (isOpen("perfSec")) $("perf").innerHTML = perfTable(P, F, X);
+  const needPR = isOpen("stackSec") || isOpen("prSec"), PR = needPR ? payloadRange(P) : null;
+  if (isOpen("stackSec")) drawStack(P, F, PR);
+  if (isOpen("prSec")) drawPR(P, F, PR);
   if (isOpen("clSec")) drawCL(P, F);
   if (isOpen("cdSec")) drawCD(P, F);
   if (isOpen("polarSec")) drawPolar(P, F);
@@ -2001,7 +2199,7 @@ function attachHover(id) {
   svg.addEventListener("pointerdown", move);
   svg.addEventListener("pointerleave", () => { tip.style.display = "none"; });
 }
-attachHover("env"); attachHover("thrustM");
+attachHover("env"); attachHover("thrustM"); attachHover("stack"); attachHover("pr");
 const dlg = $("info");
 $("info-open").addEventListener("click", () => dlg.showModal());
 $("info-close").addEventListener("click", () => dlg.close());
