@@ -33,14 +33,31 @@ html{ scroll-padding-top:env(safe-area-inset-top,0px); height:100%; }
 *,*::before,*::after{ box-sizing:inherit; }
 body{ margin:0; height:100%; overflow:hidden; background:var(--paper); color:var(--ink); font-family:var(--sans); font-size:16px; line-height:1.45; }
 
-.app{ display:grid; grid-template-columns:clamp(172px, 30vw, 300px) minmax(0,1fr); height:100%; }
+.app{ --zin:1; --zout:1; display:grid; grid-template-columns:calc(clamp(172px, 30vw, 300px) * var(--zin)) minmax(0,1fr); height:100%; }
+aside{ zoom:var(--zin); }
+#grid{ zoom:var(--zout); }
+.zoomctl{ display:inline-flex; align-items:center; gap:0.25rem; }
+.zoomctl .zval{ min-width:2.9rem; text-align:center; font:500 0.85rem var(--cond); font-variant-numeric:tabular-nums; color:var(--muted); cursor:pointer; background:none; border:0; padding:0.2rem 0; }
+.zoomctl .zval:hover{ color:var(--ink); }
+.zoomctl .tbtn{ width:1.9rem; padding:0.2rem 0; text-align:center; font-weight:600; }
+.side-zoom{ display:flex; align-items:center; justify-content:space-between; gap:0.4rem; margin:-0.3rem 0 0.9rem; font-size:0.85rem; color:var(--muted); }
+.drag{ flex:none; display:grid; place-items:center; width:1.5rem; height:1.7rem; margin-left:auto; border:0; border-radius:5px; background:none; color:var(--muted); cursor:grab; touch-action:none; font-size:1rem; line-height:1; letter-spacing:-0.1em; }
+.drag:hover{ color:var(--ink); background:var(--paper); }
+.drag:active{ cursor:grabbing; }
+section.chart h2{ display:flex; align-items:center; gap:0.4rem; }
+section.chart.dragging{ opacity:0.45; }
+section.chart.drop-before{ box-shadow:0 -5px 0 -1px var(--cold); }
+section.chart.drop-after{ box-shadow:0 5px 0 -1px var(--cold); }
+.grid.two section.chart.drop-before{ box-shadow:-5px 0 0 -1px var(--cold); }
+.grid.two section.chart.drop-after{ box-shadow:5px 0 0 -1px var(--cold); }
+body.dragging-sec, body.dragging-sec *{ cursor:grabbing !important; user-select:none; }
 aside{ position:relative; overflow-y:auto; background:var(--panel); border-right:1px solid var(--line); padding:0.9rem 0.9rem 1.2rem; }
 .app{ transition:grid-template-columns 0.18s ease; }
 .side-hide{ position:absolute; top:0.7rem; right:0.6rem; width:1.9rem; height:1.9rem; display:grid; place-items:center; font:600 1.05rem var(--sans); color:var(--muted); background:var(--paper); border:1px solid var(--line); border-radius:6px; cursor:pointer; }
 .side-hide:hover{ color:var(--ink); border-color:var(--cold); }
 aside h1{ padding-right:2.2rem; }
 .side-strip{ display:none; }
-.app.side-collapsed{ grid-template-columns:2.7rem minmax(0,1fr); }
+.app.side-collapsed{ grid-template-columns:calc(2.7rem * var(--zin)) minmax(0,1fr); }
 .app.side-collapsed aside{ padding:0; overflow:hidden; }
 .app.side-collapsed aside > :not(.side-strip){ display:none !important; }
 .app.side-collapsed .side-strip{ display:flex; flex-direction:column; align-items:center; gap:0.7rem; width:100%; height:100%; padding:0.8rem 0; margin:0; background:var(--panel); border:0; color:var(--ink); cursor:pointer; }
@@ -83,7 +100,7 @@ select{ width:100%; font:500 0.95rem var(--sans); padding:0.35rem 0.4rem; border
 section.chart{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:0.8rem 0.9rem 0.7rem; min-width:0; }
 section.chart h2{ font-family:var(--cond); font-weight:600; font-size:1.15rem; margin:0; }
 section.chart > p{ margin:0.15rem 0 0.45rem; color:var(--muted); font-size:0.85rem; max-width:80ch; }
-.sec-toggle{ display:flex; align-items:center; gap:0.45rem; width:100%; padding:0; margin:0; background:none; border:0; color:inherit; font:inherit; text-align:left; cursor:pointer; }
+.sec-toggle{ display:flex; align-items:center; gap:0.45rem; flex:1; min-width:0; padding:0; margin:0; background:none; border:0; color:inherit; font:inherit; text-align:left; cursor:pointer; }
 .chev{ display:inline-block; width:0.9rem; color:var(--muted); transition:transform 0.15s; }
 .chev::before{ content:"▾"; }
 section.chart.collapsed .chev{ transform:rotate(-90deg); }
@@ -187,6 +204,8 @@ table.glossary td:first-child{ font-weight:600; white-space:nowrap; width:1%; }
     <h1>Aircraft performance explorer</h1>
     <p class="fluid" id="acdesc"></p>
     <button type="button" class="infobtn" id="info-open"><span aria-hidden="true">i</span>User guide</button>
+    <div class="side-zoom" role="group" aria-label="Zoom of the inputs"><span>Inputs zoom</span>
+      <span class="zoomctl"><button type="button" class="tbtn" data-zoom="in" data-step="-1" aria-label="Zoom inputs out">−</button><button type="button" class="zval" id="zval-in" data-zreset="in" title="Reset to 100 %">100 %</button><button type="button" class="tbtn" data-zoom="in" data-step="1" aria-label="Zoom inputs in">+</button></span></div>
     <div class="field">
       <label for="acsel">Aircraft</label>
       <select id="acsel"></select>
@@ -225,6 +244,11 @@ table.glossary td:first-child{ font-weight:600; white-space:nowrap; width:1%; }
       <div class="tgroup">
         <button type="button" class="tbtn" id="expand-all">Expand all</button>
         <button type="button" class="tbtn" id="collapse-all">Collapse all</button>
+        <button type="button" class="tbtn" id="reset-order" title="Put the result sections back in their original order">Reset order</button>
+      </div>
+      <div class="tgroup" role="group" aria-label="Zoom of the results">
+        <span class="tlabel">Results zoom</span>
+        <span class="zoomctl"><button type="button" class="tbtn" data-zoom="out" data-step="-1" aria-label="Zoom results out">−</button><button type="button" class="zval" id="zval-out" data-zreset="out" title="Reset to 100 %">100 %</button><button type="button" class="tbtn" data-zoom="out" data-step="1" aria-label="Zoom results in">+</button></span>
       </div>
       <div class="tgroup seg" role="group" aria-label="Layout">
         <span class="tlabel">Layout</span>
@@ -393,7 +417,9 @@ table.glossary td:first-child{ font-weight:600; white-space:nowrap; width:1%; }
       <li><b>Climb</b> can be given as a flight path angle γ or as a climb rate. Negative values mean descent. The <b>Glide</b> button finds the descent angle at which no thrust is needed: the engine-out (or sailplane) glide.</li>
       <li><b>Turn</b> can be given as bank angle, load factor or turn radius; the other two follow. Bank 0 means straight flight.</li>
       <li>Red messages mean that no steady flight exists (for example the wing would stall). Amber messages flag limits that are exceeded but where the physics still works, such as too much weight or not enough thrust.</li>
-      <li>Click a section title to fold it away; folded sections are not recalculated. <b>Expand all / Collapse all</b> and <b>Layout</b> are at the top. The « button hides the input panel to give the charts more room; the strip on the left brings it back. The page remembers these choices in this browser.</li>
+      <li>Click a section title to fold it away; folded sections are not recalculated. <b>Expand all / Collapse all</b> and <b>Layout</b> are at the top. The « button hides the input panel to give the charts more room; the strip on the left brings it back.</li>
+      <li>Drag a section by its ⋮⋮ handle (right of the title) to move it; a blue bar shows where it will land. With the handle focused, Alt + arrow keys move it one place. <b>Reset order</b> restores the original order.</li>
+      <li><b>Results zoom</b> (top) and <b>Inputs zoom</b> (under the guide button) make text and charts smaller or larger, for example to fit more on a big screen; click the percentage to go back to 100 %. The page remembers all of these choices in this browser.</li>
     </ul>
 
     <h3>Reading the views</h3>
@@ -2128,15 +2154,104 @@ function initSections() {
     btn.type = "button"; btn.className = "sec-toggle";
     btn.innerHTML = `<span class="chev" aria-hidden="true"></span><span>${h.innerHTML}</span>`;
     h.innerHTML = ""; h.appendChild(btn);
+    const handle = document.createElement("button");
+    handle.type = "button"; handle.className = "drag"; handle.innerHTML = "⋮⋮";
+    handle.title = "Drag to move this section (or focus and press Alt + arrow keys)";
+    handle.setAttribute("aria-label", `Move section: ${btn.textContent.trim()}. Alt plus arrow keys move it.`);
+    h.appendChild(handle);
+    initDrag(sec, handle);
     sec._set = c => { sec.classList.toggle("collapsed", c); btn.setAttribute("aria-expanded", String(!c)); c ? collapsedSet.add(sec.id) : collapsedSet.delete(sec.id); };
     sec._set(collapsedSet.has(sec.id));
     btn.addEventListener("click", () => { sec._set(!sec.classList.contains("collapsed")); store.set("ape-collapsed", [...collapsedSet]); schedule(); });
   });
   const all = c => { document.querySelectorAll("#grid > section.chart").forEach(sec => sec._set(c)); store.set("ape-collapsed", [...collapsedSet]); schedule(); };
   $("expand-all").addEventListener("click", () => all(false));
+  $("reset-order").addEventListener("click", () => {
+    const grid = $("grid"); for (const id of DEFAULT_ORDER) { const el = $(id); if (el) grid.appendChild(el); }
+    store.set("ape-order", null); schedule();
+  });
   $("collapse-all").addEventListener("click", () => all(true));
   document.querySelectorAll("[data-layout]").forEach(b => b.addEventListener("click", () => { layoutMode = b.dataset.layout; store.set("ape-layout", layoutMode); schedule(); }));
 }
+/* ---------- section reordering ---------- */
+const DEFAULT_ORDER = [...document.querySelectorAll("#grid > section.chart")].map(s => s.id);
+function applySavedOrder() {
+  const saved = store.get("ape-order", null); if (!Array.isArray(saved)) return;
+  const grid = $("grid"), ids = new Set(DEFAULT_ORDER);
+  const order = [...saved.filter(id => ids.has(id)), ...DEFAULT_ORDER.filter(id => !saved.includes(id))];
+  for (const id of order) grid.appendChild($(id));
+}
+function saveOrder() { store.set("ape-order", [...document.querySelectorAll("#grid > section.chart")].map(s => s.id)); }
+function initDrag(sec, handle) {
+  let drag = null;
+  const main = document.querySelector("main"), grid = $("grid");
+  const clear = () => grid.querySelectorAll(".drop-before,.drop-after").forEach(el => el.classList.remove("drop-before", "drop-after"));
+  const targetAt = (x, y) => {
+    let best = null, bd = Infinity;
+    for (const el of grid.children) {
+      if (el === sec || el.hidden) continue;
+      const r = el.getBoundingClientRect();
+      const dx = x < r.left ? r.left - x : x > r.right ? x - r.right : 0, dy = y < r.top ? r.top - y : y > r.bottom ? y - r.bottom : 0, d = dx * dx + dy * dy;
+      if (d < bd) { bd = d; best = {el, r}; }
+    }
+    if (!best) return null;
+    const two = grid.classList.contains("two"), r = best.r;
+    const before = two ? x < r.left + r.width / 2 : y < r.top + r.height / 2;
+    return {el: best.el, before};
+  };
+  const tick = () => {
+    if (!drag) return;
+    const r = main.getBoundingClientRect(), edge = 60;
+    if (drag.y < r.top + edge) main.scrollTop -= Math.ceil((r.top + edge - drag.y) / 4);
+    else if (drag.y > r.bottom - edge) main.scrollTop += Math.ceil((drag.y - (r.bottom - edge)) / 4);
+    const t = targetAt(drag.x, drag.y); clear();
+    if (t) t.el.classList.add(t.before ? "drop-before" : "drop-after");
+    drag.t = t; drag.raf = requestAnimationFrame(tick);
+  };
+  handle.addEventListener("pointerdown", e => {
+    if (e.button !== 0) return;
+    e.preventDefault(); e.stopPropagation();
+    handle.setPointerCapture(e.pointerId);
+    drag = {x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, moved: false, t: null};
+  });
+  handle.addEventListener("pointermove", e => {
+    if (!drag) return;
+    drag.x = e.clientX; drag.y = e.clientY;
+    if (!drag.moved && Math.hypot(drag.x - drag.x0, drag.y - drag.y0) > 4) {
+      drag.moved = true; sec.classList.add("dragging"); document.body.classList.add("dragging-sec"); drag.raf = requestAnimationFrame(tick);
+    }
+  });
+  const end = commit => {
+    if (!drag) return;
+    cancelAnimationFrame(drag.raf);
+    if (commit && drag.moved && drag.t) { drag.t.el[drag.t.before ? "before" : "after"](sec); saveOrder(); schedule(); }
+    clear(); sec.classList.remove("dragging"); document.body.classList.remove("dragging-sec"); drag = null;
+  };
+  handle.addEventListener("pointerup", () => end(true));
+  handle.addEventListener("pointercancel", () => end(false));
+  handle.addEventListener("keydown", e => {
+    if (e.key === "Escape") { end(false); return; }
+    if (!e.altKey || !["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) return;
+    e.preventDefault();
+    const up = e.key === "ArrowUp" || e.key === "ArrowLeft", sib = up ? sec.previousElementSibling : sec.nextElementSibling;
+    if (!sib) return;
+    sib[up ? "before" : "after"](sec); saveOrder(); handle.focus(); sec.scrollIntoView({block: "nearest"}); schedule();
+  });
+}
+
+/* ---------- zoom ---------- */
+const ZOOMS = [0.5, 0.6, 0.67, 0.75, 0.8, 0.9, 1, 1.1, 1.25, 1.4, 1.5];
+const zoom = {in: store.get("ape-zoom-in", 1), out: store.get("ape-zoom-out", 1)};
+function applyZoom() {
+  const app = $("app");
+  for (const k of ["in", "out"]) { if (!ZOOMS.includes(zoom[k])) zoom[k] = 1; app.style.setProperty(k === "in" ? "--zin" : "--zout", zoom[k]); $("zval-" + k).textContent = `${Math.round(zoom[k] * 100)} %`; }
+  document.querySelectorAll("[data-zoom]").forEach(b => { const i = ZOOMS.indexOf(zoom[b.dataset.zoom]), st = +b.dataset.step; b.disabled = i + st < 0 || i + st >= ZOOMS.length; });
+}
+function setZoom(k, v) { zoom[k] = v; store.set("ape-zoom-" + k, v); applyZoom(); schedule(); setTimeout(schedule, 220); }
+document.querySelectorAll("[data-zoom]").forEach(b => b.addEventListener("click", () => { const k = b.dataset.zoom, i = ZOOMS.indexOf(zoom[k]); setZoom(k, ZOOMS[clamp(i + +b.dataset.step, 0, ZOOMS.length - 1)]); }));
+document.querySelectorAll("[data-zreset]").forEach(b => b.addEventListener("click", () => setZoom(b.dataset.zreset, 1)));
+applyZoom();
+
 function applyLayout() {
   const grid = $("grid");
   const cols = layoutMode === "2" ? 2 : layoutMode === "1" ? 1 : (grid.clientWidth >= 1400 ? 2 : 1);
@@ -2206,6 +2321,7 @@ $("info-close").addEventListener("click", () => dlg.close());
 dlg.addEventListener("click", e => { if (e.target === dlg) dlg.close(); });
 window.addEventListener("resize", schedule);
 matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", schedule);
+applySavedOrder();
 initSections();
 buildDataTable();
 buildAcUI();
