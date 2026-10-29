@@ -48,8 +48,8 @@ section.chart h2{ display:flex; align-items:center; gap:0.4rem; }
 section.chart.dragging{ opacity:0.45; }
 section.chart.drop-before{ box-shadow:0 -5px 0 -1px var(--cold); }
 section.chart.drop-after{ box-shadow:0 5px 0 -1px var(--cold); }
-.grid.two section.chart.drop-before{ box-shadow:-5px 0 0 -1px var(--cold); }
-.grid.two section.chart.drop-after{ box-shadow:5px 0 0 -1px var(--cold); }
+.grid.multi section.chart.drop-before{ box-shadow:-5px 0 0 -1px var(--cold); }
+.grid.multi section.chart.drop-after{ box-shadow:5px 0 0 -1px var(--cold); }
 body.dragging-sec, body.dragging-sec *{ cursor:grabbing !important; user-select:none; }
 aside{ position:relative; overflow-y:auto; background:var(--panel); border-right:1px solid var(--line); padding:0.9rem 0.9rem 1.2rem; }
 .app{ transition:grid-template-columns 0.18s ease; }
@@ -95,7 +95,7 @@ select{ width:100%; font:500 0.95rem var(--sans); padding:0.35rem 0.4rem; border
 .tbtn:hover{ border-color:var(--cold); }
 .seg .tbtn[aria-pressed="true"]{ background:var(--cold); border-color:var(--cold); color:#fff; }
 .grid{ display:grid; grid-template-columns:minmax(0,1fr); gap:1rem; align-items:start; }
-.grid.two{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+.grid.multi{ grid-template-columns:repeat(var(--cols, 2), minmax(0,1fr)); }
 
 section.chart{ background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:0.8rem 0.9rem 0.7rem; min-width:0; }
 section.chart h2{ font-family:var(--cond); font-weight:600; font-size:1.15rem; margin:0; }
@@ -251,10 +251,12 @@ table.glossary td:first-child{ font-weight:600; white-space:nowrap; width:1%; }
         <span class="zoomctl"><button type="button" class="tbtn" data-zoom="out" data-step="-1" aria-label="Zoom results out">−</button><button type="button" class="zval" id="zval-out" data-zreset="out" title="Reset to 100 %">100 %</button><button type="button" class="tbtn" data-zoom="out" data-step="1" aria-label="Zoom results in">+</button></span>
       </div>
       <div class="tgroup seg" role="group" aria-label="Layout">
-        <span class="tlabel">Layout</span>
+        <span class="tlabel">Columns</span>
         <button type="button" class="tbtn" data-layout="auto">Auto</button>
-        <button type="button" class="tbtn" data-layout="1">1 column</button>
-        <button type="button" class="tbtn" data-layout="2">2 columns</button>
+        <button type="button" class="tbtn" data-layout="1" aria-label="1 column">1</button>
+        <button type="button" class="tbtn" data-layout="2" aria-label="2 columns">2</button>
+        <button type="button" class="tbtn" data-layout="3" aria-label="3 columns">3</button>
+        <button type="button" class="tbtn" data-layout="4" aria-label="4 columns">4</button>
       </div>
     </div>
     <div class="grid" id="grid">
@@ -417,7 +419,7 @@ table.glossary td:first-child{ font-weight:600; white-space:nowrap; width:1%; }
       <li><b>Climb</b> can be given as a flight path angle γ or as a climb rate. Negative values mean descent. The <b>Glide</b> button finds the descent angle at which no thrust is needed: the engine-out (or sailplane) glide.</li>
       <li><b>Turn</b> can be given as bank angle, load factor or turn radius; the other two follow. Bank 0 means straight flight.</li>
       <li>Red messages mean that no steady flight exists (for example the wing would stall). Amber messages flag limits that are exceeded but where the physics still works, such as too much weight or not enough thrust.</li>
-      <li>Click a section title to fold it away; folded sections are not recalculated. <b>Expand all / Collapse all</b> and <b>Layout</b> are at the top. The « button hides the input panel to give the charts more room; the strip on the left brings it back.</li>
+      <li>Click a section title to fold it away; folded sections are not recalculated. <b>Expand all / Collapse all</b> and <b>Columns</b> (Auto, or 1 to 4) are at the top. The « button hides the input panel to give the charts more room; the strip on the left brings it back.</li>
       <li>Drag a section by its ⋮⋮ handle (right of the title) to move it; a blue bar shows where it will land. With the handle focused, Alt + arrow keys move it one place. <b>Reset order</b> restores the original order.</li>
       <li><b>Results zoom</b> (top) and <b>Inputs zoom</b> (under the guide button) make text and charts smaller or larger, for example to fit more on a big screen; click the percentage to go back to 100 %. The page remembers all of these choices in this browser.</li>
     </ul>
@@ -2195,7 +2197,7 @@ function initDrag(sec, handle) {
       if (d < bd) { bd = d; best = {el, r}; }
     }
     if (!best) return null;
-    const two = grid.classList.contains("two"), r = best.r;
+    const two = grid.classList.contains("multi"), r = best.r;
     const before = two ? x < r.left + r.width / 2 : y < r.top + r.height / 2;
     return {el: best.el, before};
   };
@@ -2254,8 +2256,10 @@ applyZoom();
 
 function applyLayout() {
   const grid = $("grid");
-  const cols = layoutMode === "2" ? 2 : layoutMode === "1" ? 1 : (grid.clientWidth >= 1400 ? 2 : 1);
-  grid.classList.toggle("two", cols === 2);
+  const w = grid.clientWidth;
+  const cols = ["1", "2", "3", "4"].includes(layoutMode) ? +layoutMode : (w >= 2800 ? 4 : w >= 2100 ? 3 : w >= 1400 ? 2 : 1);
+  grid.classList.toggle("multi", cols > 1);
+  grid.style.setProperty("--cols", cols);
   document.querySelectorAll("[data-layout]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.layout === layoutMode)));
 }
 
